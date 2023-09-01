@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../static/css/site.css" th:href="@{/css/site.css}" rel="stylesheet"/>
+    <link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<script
+	src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+
+
+<link rel="stylesheet" href="css/lib/bootstrap.min.css">
+  <script src="js/lib/bootstrap.min.js"></script>
+    <title>Publisher</title>
+    
+    
+    
+    <script>
+	function getAllPublisher() {
+		$
+				.ajax({
+					type : "GET",
+					url : "http://localhost:8080/publisher",
+					headers : {
+						'Content-Type' : 'application/json',
+					},
+					contentType : 'application/json',
+					success : function(result) {
+						var datas = "<table class='table table-bordered' > <thead style='background-color: #262673; color:white;'><tr><td>NAME</td><td>VIEW</td><td>EDIT</td><td>DELETE</td></tr></thead><tbody>";
+						$("#mySelect").empty();
+						if (result.length > 0) {
+							$
+									.each(
+											result,
+											function(index, item) {
+												
+												$('<option/>').val(item.id).text(item.name).appendTo('#mySelect');
+												
+												datas = datas + "<tr><td style=' color:#262673;'>"
+														+ item.name
+														+ "</td>";
+												datas = datas
+														+ "<td><button class='btn btn-outline-warning ' onclick='viewPublisher("
+														+ item.id
+														+ ");' style=''>VIEW</button></td>";
+												datas = datas
+														+ "<td><button class='btn btn-outline-success my-2 my-sm-0' onclick='editPublisherModel("
+														+ "\""		
+														+ item.name
+														+ "\","
+														+ item.id		
+														+ ");' style=''>EDIT</button></td>";
+												datas = datas
+														+ "<td><button class='btn btn-outline-danger my-2 my-sm-0' onclick='deletePublisher("
+														+ item.id
+														+ ");' style=''>DELETE</button></td>";
+												
+												datas = datas + "</tr>";
+
+											});
+						} else {
+							datas = datas
+									+ "<tr><td colspan='7'><p style='color:red;'>No records found</p></td></tr>";
+						}
+
+						datas = datas + "</tbody></table>";
+						$("#allApps").empty();
+						$("#allApps").append(datas);
+
+					},
+					error : function(err) {
+						$("#errorAlert").children('.modal-dialog').children(
+								'.modal-content').children('span').html(
+								"<p style='font-size:20px;color:red'>"
+										+ err.responseJSON.message + "</p>");
+						$("#errorAlert").modal("show");
+
+					}
+				});
+	}
+
+	function deletePublisher(id) {
+		$.ajax({
+			type : "DELETE",
+			headers : {
+				'Content-Type' : 'application/json'
+			},
+			url : "http://localhost:8080/publisher/" + id,
+			contentType : 'application/json',
+			success : function(result) {
+				getAllPublisher();
+			},
+			error : function(err) {
+				jQuery.noConflict();
+				$("#errorAlert").children('.modal-dialog').children(
+						'.modal-content').children('span').html(
+						"<p style='font-size:20px;color:red'>"
+								+ err.responseJSON.message + "</p>");
+				$("#errorAlert").modal("show");
+			}
+		});
+	}
+	
+	function deleteBoardGame(id) {
+		$.ajax({
+			type : "DELETE",
+			headers : {
+				'Content-Type' : 'application/json'
+			},
+			url : "http://localhost:8080/board-game/" + id,
+			contentType : 'application/json',
+			success : function(result) {
+				$("#viewPublisherModel").modal("hide");
+				viewPublisher($("#publisherId").val());
+			},
+			error : function(err) {
+				jQuery.noConflict();
+				$("#errorAlert").children('.modal-dialog').children(
+						'.modal-content').children('span').html(
+						"<p style='font-size:20px;color:red'>"
+								+ err.responseJSON.message + "</p>");
+				$("#errorAlert").modal("show");
+			}
+		});
+	}
+	
+	function editBoardGame(id) {
+		
+		
+		$("#ebgId").val(id);
+		$.ajax({
+			type : "GET",
+			headers : {
+				'Content-Type' : 'application/json'
+			},
+			url : "http://localhost:8080/board-game/" + id,
+			contentType : 'application/json',
+			success : function(result) {
+				$("#ebgName").val(result.name);
+				$("#ebgDesc").val(result.description);
+				$("#ebgImgUrl").val(result.imageUrl);
+				$("#editBoardgameModel").appendTo("body").modal("show");
+			},
+			error : function(err) {
+				jQuery.noConflict();
+				$("#errorAlert").children('.modal-dialog').children(
+						'.modal-content').children('span').html(
+						"<p style='font-size:20px;color:red'>"
+								+ err.responseJSON.message + "</p>");
+				$("#errorAlert").modal("show");
+			}
+		});
+		
+		
+		
+		
+	}
+	
+	function viewPublisher(id) {
+		
+		$("#publisherId").val(id);
+		$.ajax({
+			type : "GET",
+			headers : {
+				'Content-Type' : 'application/json'
+			},
+			url : "http://localhost:8080/publisher/" + id,
+			contentType : 'application/json',
+			success : function(result) {
+				var datas = "<table class='table table-bordered' > <thead style='background-color: #262673; color:white;'><tr><td>NAME</td><td>DESCRIPTION</td><td>EDIT</td><td>DELETE</td></tr></thead><tbody>";
+				
+				if (result.games.length > 0) {
+					$
+							.each(
+									result.games,
+									function(index, item) {
+										
+										datas = datas + "<tr><td style=' color:#262673;'>"
+												+ item.name
+												+ "</td>";
+										datas = datas + "<td style=' color:#262673;'>"
+												+ item.description
+												+ "</td>";
+										datas = datas
+												+ "<td><button class='btn btn-outline-success my-2 my-sm-0' onclick='editBoardGame("
+												+ item.id		
+												+ ");' style=''>EDIT</button></td>";
+										datas = datas
+												+ "<td><button class='btn btn-outline-danger my-2 my-sm-0' onclick='deleteBoardGame("
+												+ item.id
+												+ ");' style=''>DELETE</button></td>";
+										
+										datas = datas + "</tr>";
+
+									});
+				} else {
+					datas = datas
+							+ "<tr><td colspan='7'><p style='color:red;'>No records found</p></td></tr>";
+				}
+
+				datas = datas + "</tbody></table>";
+				$("#pubGames").empty();
+				$("#pubGames").append(datas);
+				
+				$("#pubName").empty();
+				$("#pubName").append(result.name);
+				$("#viewPublisherModel").modal("show");
+				
+			},
+			error : function(err) {
+				jQuery.noConflict();
+				$("#errorAlert").children('.modal-dialog').children(
+						'.modal-content').children('span').html(
+						"<p style='font-size:20px;color:red'>"
+								+ err.responseJSON.message + "</p>");
+				$("#errorAlert").modal("show");
+			}
+		});
+	}
+	
+	function editPublisherModel(name, id) {
+		$("#epublisherNameId").val(id);
+		$("#epublisherName").val(name);
+		$("#editModel").modal("show");
+	
+	}
+	
+function editPublisher() {
+		if($("#epublisherName").val() == null || $("#epublisherName").val() == undefined || $("#epublisherName").val() == "" || $("#epublisherName").val().trim() == "" ){
+			$("#eerrorMsg").empty();
+			$("#eerrorMsg").attr("style", "display: block")
+			$("#eerrorMsg").append("<p style='font-size:14px;color:red; '>Fields cannot be blank</p>");
+			return false;
+		}
+		
+		if($("#epublisherName").val().trim().length < 5 || $("#epublisherName").val().trim().length > 100){
+			$("#eerrorMsg").empty();
+			$("#eerrorMsg").attr("style", "display: block")
+			$("#eerrorMsg").append("<p style='font-size:14px;color:red; '>Publisher name should be minimum 5 characters and maximum 100 characters</p>");
+			return false;
+		}
+		
+		
+		
+		var data = {}
+        data["name"] = $("#epublisherName").val();
+		$.ajax({
+			type : "PUT",
+			data: JSON.stringify(data),
+			headers : {
+				'Content-Type' : 'application/json'
+			},
+			url : "http://localhost:8080/publisher/"+$("#epublisherNameId").val(),
+			contentType : 'application/json',
+			success : function(result) {
+				getAllPublisher();
+				$("#epublisherName").val("");
+				$("#eerrorMsg").empty();
+				$("#editModel").modal("hide");
+			},
+			error : function(err) {
+				jQuery.noConflict();
+				$("#errorAlert").children('.modal-dialog').children(
+						'.modal-content').children('span').html(
+						"<p style='font-size:20px;color:red'>"
+								+ err.responseJSON.message + "</p>");
+				$("#errorAlert").modal("show");
+			}
+		});
+	}
+	
+	function updateBoardGame(){
+		if($("#ebgName").val() == null || $("#ebgName").val() == undefined || $("#ebgName").val() == "" || $("#ebgName").val().trim() == "" ){
+			$("#enameErrorMsg").empty();
+			$("#enameErrorMsg").attr("style", "display: block")
+			$("#enameErrorMsg").append("<p style='font-size:14px;color:red; '>Name cannot be blank</p>");
+			return false;
+		}
+		
+		if($("#ebgDesc").val() == null || $("#ebgDesc").val() == undefined || $("#ebgDesc").val() == "" || $("#ebgDesc").val().trim() == "" ){
+			$("#enameErrorMsg").empty();
+			$("#edescErrorMsg").empty();
+			$("#edescErrorMsg").attr("style", "display: block")
+			$("#edescErrorMsg").append("<p style='font-size:14px;color:red; '>Description cannot be blank</p>");
+			return false;
+		}
+		
+		if($("#ebgImgUrl").val() == null || $("#ebgImgUrl").val() == undefined || $("#ebgImgUrl").val() == "" || $("#ebgImgUrl").val().trim() == "" ){
+			$("#enameErrorMsg").empty();
+			$("#edescErrorMsg").empty();
+			$("#eimgErrorMsg").empty();
+			$("#eimgErrorMsg").attr("style", "display: block")
+			$("#eimgErrorMsg").append("<p style='font-size:14px;color:red; '>Image URL cannot be blank</p>");
+			return false;
+		}
+		
+		if($("#ebgName").val().trim().length < 5 || $("#ebgName").val().trim().length > 100){
+			$("#enameErrorMsg").empty();
+			$("#enameErrorMsg").attr("style", "display: block")
+			$("#enameErrorMsg").append("<p style='font-size:14px;color:red; '>Board game name should be minimum 5 characters and maximum 100 characters</p>");
+			return false;
+		}
+		
+		var data = {}
+        data["name"] = $("#ebgName").val();
+		data["description"] = $("#ebgDesc").val();
+		data["imageUrl"] = $("#ebgImgUrl").val();
+		$.ajax({
+			type : "PUT",
+			data: JSON.stringify(data),
+			headers : {
+				'Content-Type' : 'application/json'
+			},
+			url : "http://localhost:8080/board-game/"+$("#ebgId").val(),
+			contentType : 'application/json',
+			success : function(result) {
+				getAllPublisher();
+				$("#ebgName").val("");
+				$("#ebgDesc").val("");
+				$("#ebgImgUrl").val("");
+				$("#enameErrorMsg").empty();
+				$("#edescErrorMsg").empty();
+				$("#eimgErrorMsg").empty();
+				$("#editBoardgameModel").modal("hide");
+				$("#viewPublisherModel").modal("hide");
+				viewPublisher($("#publisherId").val());
+			},
+			error : function(err) {
+				jQuery.noConflict();
+				$("#errorAlert").children('.modal-dialog').children(
+						'.modal-content').children('span').html(
+						"<p style='font-size:20px;color:red'>"
+								+ err.responseJSON.message + "</p>");
+				$("#errorAlert").modal("show");
+			}
+		});
+	}
+	
+	function saveBoardGame(){
+		if($("#bgName").val() == null || $("#bgName").val() == undefined || $("#bgName").val() == "" || $("#bgName").val().trim() == "" ){
+			$("#nameErrorMsg").empty();
+			$("#nameErrorMsg").attr("style", "display: block")
+			$("#nameErrorMsg").append("<p style='font-size:14px;color:red; '>Name cannot be blank</p>");
+			return false;
+		}
+		
+		if($("#bgDesc").val() == null || $("#bgDesc").val() == undefined || $("#bgDesc").val() == "" || $("#bgDesc").val().trim() == "" ){
+			$("#nameErrorMsg").empty();
+			$("#descErrorMsg").empty();
+			$("#descErrorMsg").attr("style", "display: block")
+			$("#descErrorMsg").append("<p style='font-size:14px;color:red; '>Description cannot be blank</p>");
+			return false;
+		}
+		
+		if($("#bgImgUrl").val() == null || $("#bgImgUrl").val() == undefined || $("#bgImgUrl").val() == "" || $("#bgImgUrl").val().trim() == "" ){
+			$("#nameErrorMsg").empty();
+			$("#descErrorMsg").empty();
+			$("#imgErrorMsg").empty();
+			$("#imgErrorMsg").attr("style", "display: block")
+			$("#imgErrorMsg").append("<p style='font-size:14px;color:red; '>Image URL cannot be blank</p>");
+			return false;
+		}
+		
+		if($("#mySelect").val() == null || $("#mySelect").val() == undefined || $("#mySelect").val() == "" || $("#mySelect").val().trim() == "" ){
+			$("#nameErrorMsg").empty();
+			$("#descErrorMsg").empty();
+			$("#imgErrorMsg").empty();
+			$("#pubErrorMsg").empty();
+			$("#pubErrorMsg").attr("style", "display: block")
+			$("#pubErrorMsg").append("<p style='font-size:14px;color:red; '>Select any Publisher</p>");
+			return false;
+		}
+		
+		if($("#bgName").val().trim().length < 5 || $("#bgName").val().trim().length > 100){
+			$("#nameErrorMsg").empty();
+			$("#nameErrorMsg").attr("style", "display: block")
+			$("#nameErrorMsg").append("<p style='font-size:14px;color:red; '>Board game name should be minimum 5 characters and maximum 100 characters</p>");
+			return false;
+		}
+		
+		var data = {}
+        data["name"] = $("#bgName").val();
+		data["description"] = $("#bgDesc").val();
+		data["imageUrl"] = $("#bgImgUrl").val();
+		data["publisherId"] = $("#mySelect").val();
+		$.ajax({
+			type : "POST",
+			data: JSON.stringify(data),
+			headers : {
+				'Content-Type' : 'application/json'
+			},
+			url : "http://localhost:8080/board-game",
+			contentType : 'application/json',
+			success : function(result) {
+				getAllPublisher();
+				$("#bgName").val("");
+				$("#bgDesc").val("");
+				$("#bgImgUrl").val("");
+				$("#bgName").val("");
+				$("#nameErrorMsg").empty();
+				$("#descErrorMsg").empty();
+				$("#imgErrorMsg").empty();
+				$("#pubErrorMsg").empty();
+				$("#addBoardgameModel").modal("hide");
+				
+				$("#successMsg").append("<p style='font-size:14px;green; '>Board game added successfully</p>");
+				$("#successAlert").modal("show");
+			},
+			error : function(err) {
+				jQuery.noConflict();
+				$("#errorAlert").children('.modal-dialog').children(
+						'.modal-content').children('span').html(
+						"<p style='font-size:20px;color:red'>"
+								+ err.responseJSON.message + "</p>");
+				$("#errorAlert").modal("show");
+			}
+		});
+	}
+	
+	
+	function savePublisher() {
+		
+		if($("#publisherName").val() == null || $("#publisherName").val() == undefined || $("#publisherName").val() == "" || $("#publisherName").val().trim() == "" ){
+			$("#errorMsg").empty();
+			$("#errorMsg").attr("style", "display: block")
+			$("#errorMsg").append("<p style='font-size:14px;color:red; '>Fields cannot be blank</p>");
+			return false;
+		}
+		
+		if($("#publisherName").val().trim().length < 5 || $("#publisherName").val().trim().length > 100){
+			$("#errorMsg").empty();
+			$("#errorMsg").attr("style", "display: block")
+			$("#errorMsg").append("<p style='font-size:14px;color:red; '>Publisher name should be minimum 5 characters and maximum 100 characters</p>");
+			return false;
+		}
+		
+		var data = {}
+        data["name"] = $("#publisherName").val();
+		$.ajax({
+			type : "POST",
+			data: JSON.stringify(data),
+			headers : {
+				'Content-Type' : 'application/json'
+			},
+			url : "http://localhost:8080/publisher",
+			contentType : 'application/json',
+			success : function(result) {
+				getAllPublisher();
+				$("#publisherName").val("");
+				$("#errorMsg").empty();
+				$("#addAppModel").modal("hide");
+			},
+			error : function(err) {
+				jQuery.noConflict();
+				$("#errorAlert").children('.modal-dialog').children(
+						'.modal-content').children('span').html(
+						"<p style='font-size:20px;color:red'>"
+								+ err.responseJSON.message + "</p>");
+				$("#errorAlert").modal("show");
+			}
+		});
+	}
+
+	$(document)
+			.ready(
+					function() {
+						getAllPublisher();
+					});
+</script>
+</head>
+<body>
+    <h1>Game Publisher</h1>
+   <!--  <a th:href="@{publisher/create}">Create Publisher</a> -->
+    <!-- <table>
+        <tr th:each="publisher:${publishers}">
+            <td th:text="${publisher.getId()}"></td>
+            <td th:text="${publisher.getName()}"></td>
+            <td><a th:href="@{publisher/gameDetails/} + ${publisher.getId()}">Details</a></td>
+            <td><a th:href="@{publisher/editPublisher/} + ${publisher.getId()}">Edit</a></td>
+            <td><a th:href="@{publisher/deleteDetails/} + ${publisher.getId()}">Delete</a></td>
+        </tr>
+    </table> -->
+    <div class="container">
+		<div class="row">
+			<div class="col-md-12">
+			<button class='btn btn-primary' data-toggle='modal' data-target='#addAppModel' >CREATE PUBLISHER</button>
+			<button class='btn btn-primary' data-toggle='modal' data-target='#addBoardgameModel' >CREATE BOARD GAME</button>
+			<br></br>
+				<div id="allApps"></div>
+			</div>
+		</div>
+		<br></br>
+	</div>
+	
+	
+	
+</body>
+
+
+
+
+
+
+
+<div class="modal" id="addAppModel"  role="dialog" aria-labelledby="addReceptionistLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="accountModalLabel">CREATE PUBLISHER</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="exampleInputEmail2">Publisher Name</label>
+          <input type="text" class="form-control" id="publisherName" >
+        </div>
+		<span id="errorMsg" style="display:none" ></span>
+      </div>
+      <div class="modal-footer">
+
+        <button type="button" id="saveName" onclick="savePublisher()" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" id="editModel"  role="dialog" aria-labelledby="addReceptionistLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="accountModalLabel">EDIT PUBLISHER</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      	<input type="text" class="form-control" hidden="true" id="epublisherNameId" >
+        <div class="form-group">
+          <label for="exampleInputEmail2">Publisher Name</label>
+          <input type="text" class="form-control" id="epublisherName" >
+        </div>
+		<span id="eerrorMsg" style="display:none" ></span>
+      </div>
+      <div class="modal-footer">
+
+        <button type="button" id="updateName" onclick="editPublisher()" class="btn btn-primary">Update</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" id="addBoardgameModel"  role="dialog" aria-labelledby="addReceptionistLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="accountModalLabel">ADD BOARDGAME</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="exampleInputEmail2">Select Publisher</label>
+         	<select class="form-control" id="mySelect"></select>
+        </div>
+        <span id="pubErrorMsg" style="display:none" ></span>
+        <div class="form-group">
+          <label for="exampleInputEmail2">Name</label>
+          <input type="text" class="form-control" id="bgName" >
+        </div>
+		<span id="nameErrorMsg" style="display:none" ></span>
+		
+		<div class="form-group">
+          <label for="exampleInputEmail2">Description</label>
+          <textarea class="form-control" id="bgDesc" ></textarea>
+        </div>
+		<span id="descErrorMsg" style="display:none" ></span>
+		
+		<div class="form-group">
+          <label for="exampleInputEmail2">Image URL</label>
+          <input type="text" class="form-control" id="bgImgUrl" >
+        </div>
+		<span id="imgErrorMsg" style="display:none" ></span>
+      </div>
+      <div class="modal-footer">
+
+        <button type="button" id="saveName" onclick="saveBoardGame()" class="btn btn-primary">Save</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="editBoardgameModel"  role="dialog" aria-labelledby="addReceptionistLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document" >
+    <div class="modal-content" style="background-color:aliceblue">
+      <div class="modal-header">
+        <h5 class="modal-title" id="accountModalLabel">EDIT BOARDGAME</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <input type="text" class="form-control" hidden="true" id="ebgId" >
+        <div class="form-group">
+          <label for="exampleInputEmail2">Name</label>
+          <input type="text" class="form-control" id="ebgName" >
+        </div>
+		<span id="enameErrorMsg" style="display:none" ></span>
+		
+		<div class="form-group">
+          <label for="exampleInputEmail2">Description</label>
+          <textarea class="form-control" id="ebgDesc" ></textarea>
+        </div>
+		<span id="edescErrorMsg" style="display:none" ></span>
+		
+		<div class="form-group">
+          <label for="exampleInputEmail2">Image URL</label>
+          <input type="text" class="form-control" id="ebgImgUrl" >
+        </div>
+		<span id="eimgErrorMsg" style="display:none" ></span>
+      </div>
+      <div class="modal-footer">
+
+        <button type="button" id="saveName" onclick="updateBoardGame()" class="btn btn-primary">Update</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" id="viewPublisherModel"  role="dialog" aria-labelledby="addReceptionistLabel"
+  aria-hidden="true" data-backdrop="static" data-keyboard="false"  >
+  <div class="modal-dialog modal-lg" role="document" style="width:90% !important">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pubName"></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <input type="text" class="form-control" hidden="true" id="publisherId" >
+        <div id="pubGames"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="modal" id="successAlert" role="dialog" aria-labelledby="successAlertLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="text-align: center; align-items:center; padding:10px; background-color: bisque;">
+      <img src="../img/claps.png" width="100" height="100" alt=""></img><br>
+      <span id="successMsg"></span><br><br>
+      <button type="button" class="btn btn-success" data-dismiss="modal">Okay</button>
+    </div>
+  </div>
+</div>
+</html>
